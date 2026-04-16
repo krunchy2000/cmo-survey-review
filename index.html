@@ -145,7 +145,7 @@
   .btn-devtoggle { background: transparent; border-color: #333; color: #666; }
   .btn-devtoggle:hover { border-color: #555; color: #aaa; }
   .btn-devtoggle.active { border-color: #1ABCFE55; color: #1ABCFE; background: #1ABCFE11; }
-  /* Dev cols toggle switch */
+  /* Dev mode toggle switch */
   .dev-toggle-wrap {
     display: flex; align-items: center; gap: 8px; cursor: pointer;
     user-select: none;
@@ -525,7 +525,7 @@
       <button class="btn btn-ghost" onclick="toggleAll(true)">Collapse all</button>
       <button class="btn btn-ghost" onclick="toggleAll(false)">Expand all</button>
       <div class="dev-toggle-wrap" onclick="toggleDevCols()" title="Show/hide dev columns">
-        <span class="dev-toggle-label">Dev cols</span>
+        <span class="dev-toggle-label">Dev mode</span>
         <div class="dev-toggle-track" id="dev-toggle-track">
           <div class="dev-toggle-thumb"></div>
         </div>
@@ -1513,7 +1513,7 @@ function buildRow(sec, si, row, ri) {
   tdHandle.draggable = true;
   tr.appendChild(tdHandle);
 
-  // Dev cols
+  // Dev mode
   [row.component, row.layer, sec.wf || ''].forEach(val => {
     const td = document.createElement('td');
     td.className = 'td-muted dev-col';
