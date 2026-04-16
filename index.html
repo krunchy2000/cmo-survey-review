@@ -142,6 +142,8 @@
   .scale-label { font-family: var(--mono); font-size: 10px; color: #888; min-width: 34px; text-align: center; letter-spacing: 0.04em; }
   .btn-save { background: #fff; border-color: #fff2; color: #111; }
   .btn-save:hover { background: #eee; }
+  .btn-save:disabled { background: #2a2a2a; border-color: #333; color: #555; cursor: not-allowed; opacity: 1; }
+  .btn-save:disabled:hover { background: #2a2a2a; }
   .btn-devtoggle { background: transparent; border-color: #333; color: #666; }
   .btn-devtoggle:hover { border-color: #555; color: #aaa; }
   .btn-devtoggle.active { border-color: #1ABCFE55; color: #1ABCFE; background: #1ABCFE11; }
@@ -536,7 +538,7 @@
         <button class="btn btn-ghost scale-btn" onclick="adjustScale(1)" title="Increase text size">A+</button>
       </div>
       <button class="btn btn-ghost" onclick="exportJSON()">Export JSON</button>
-      <button class="btn btn-save" onclick="saveHTML()">⬇ Save file</button>
+      <button class="btn btn-save" id="save-btn" onclick="saveHTML()" disabled>⬇ Save file</button>
     </div>
   </div>
   <div class="topbar-audit-row">
@@ -1370,6 +1372,11 @@ let auditLog = [];
 // State: save version counter
 let saveVersion = 0;
 
+function markDirty() {
+  const btn = document.getElementById('save-btn');
+  if (btn) btn.disabled = false;
+}
+
 const _savedApproved = {};
 const _savedDismissed = {};
 Object.assign(approved, _savedApproved);
@@ -1690,6 +1697,7 @@ function logAction(key, action, copyText) {
   const time = now.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' });
   const ts = `${date}, ${time}`;
   auditLog.push({ ts, who: getReviewer(), action, key, copy: copyText || '' });
+  markDirty();
   renderAuditLog();
 }
 
@@ -2133,6 +2141,8 @@ function saveHTML() {
   URL.revokeObjectURL(a.href);
   const editMsg = editCount > 0 ? ` · ${editCount} copy edit${editCount > 1 ? 's' : ''} flagged for design` : '';
   showToast(`✓ Saved as ${filename}${editMsg}`);
+  const saveBtn = document.getElementById('save-btn');
+  if (saveBtn) saveBtn.disabled = true;
 }
 
 function showToast(msg) {
@@ -2173,6 +2183,9 @@ function onLightboxKey(e) {
 // ── INIT ──────────────────────────────────────────────────────────────────────
 render(SECTIONS);
 initReviewerInput();
+
+// Mark dirty on any inline copy/note edit
+document.getElementById('sections-container').addEventListener('input', markDirty);
 
 </script>
 
