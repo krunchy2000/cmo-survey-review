@@ -1,4 +1,3 @@
-[README.md](https://github.com/user-attachments/files/26772242/README.md)
 # CMO Survey — Copy Review Tool
 **Sparks × Adweek** · Internal production tool  
 **Last updated:** 2026-04-15 · **Version:** v4
@@ -50,7 +49,7 @@ PNG filenames match Figma frame numbers exactly. Export them directly from the F
 |---|---|
 | ↗ Figma HD | Opens the source Figma file |
 | Collapse all / Expand all | Toggle all sections |
-| Dev cols | Toggle switch — reveals Component, Layer, Template columns |
+| Dev mode | Toggle switch — reveals Component, Layer, Template columns |
 | A− / 100% / A+ | Text scale control (default 14px) |
 | Export JSON | Downloads `cmo-survey.json` in the format dev requires |
 | ⬇ Save file | Exports versioned HTML with all state baked in |
@@ -130,7 +129,7 @@ PNG filenames match Figma frame numbers exactly. Export them directly from the F
 
 ## Dev columns
 
-Hidden by default. Toggle on with the **Dev cols** switch to reveal:
+Hidden by default. Toggle on with the **Dev mode** switch to reveal:
 
 | Column | Example |
 |---|---|
