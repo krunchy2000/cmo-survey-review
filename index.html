@@ -1,0 +1,2180 @@
+<html lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Copy Review — CMO Survey · Sparks × Adweek</title>
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:         #F4F2EE;
+    --surface:    #FFFFFF;
+    --ink:        #1A1A1A;
+    --ink-muted:  #888880;
+    --rule:       #E0DDD6;
+    --accent:     #1A1A1A;
+    --approved-bg:  #D6F0E2;
+    --approved-ink: #1A5C38;
+    --flagged-bg:   #FFD6D6;
+    --flagged-ink:  #8A1A1A;
+    --warn-bg:      #FFF3C0;
+    --warn-ink:     #6B4A00;
+    --figma:        #1ABCFE;
+    --mono: 'Menlo', 'Consolas', 'SF Mono', monospace;
+    --sans: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    --copy-size: 14px;
+  }
+
+  html { font-size: 16px; }
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+
+  /* ── TOP BAR ── */
+  .topbar {
+    position: sticky; top: 0; z-index: 100;
+    background: #111;
+    display: flex; flex-direction: column;
+    border-bottom: 1px solid #2a2a2a;
+  }
+  .topbar-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 28px; height: 62px;
+  }
+  .topbar-audit-row {
+    display: flex; align-items: center; gap: 0;
+    padding: 0 28px; height: 36px;
+    border-top: 1px solid #1e1e1e;
+    background: #0d0d0d;
+  }
+  .topbar-audit-left {
+    display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0;
+  }
+  .topbar-audit-reviewer {
+    display: flex; align-items: center; gap: 6px; flex-shrink: 0;
+  }
+  .topbar-audit-label {
+    font-family: var(--mono); font-size: 9px; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase; color: #444;
+  }
+  .topbar-reviewer-input {
+    font-family: var(--mono); font-size: 11px; font-weight: 600;
+    color: #ccc; background: none; border: none;
+    border-bottom: 1px solid #333; padding: 1px 4px;
+    min-width: 100px; outline: none; transition: border-color 0.15s;
+  }
+  .topbar-reviewer-input:focus { border-bottom-color: #1ABCFE; color: #fff; }
+  .topbar-reviewer-input::placeholder { color: #444; font-weight: 400; }
+  .topbar-audit-divider { width: 1px; height: 16px; background: #222; flex-shrink: 0; margin: 0 10px; }
+  .topbar-audit-feed {
+    flex: 1; display: flex; align-items: center; gap: 0;
+    overflow: hidden; min-width: 0;
+    font-family: var(--mono); font-size: 10px;
+  }
+  .topbar-audit-empty { color: #333; font-style: italic; font-size: 10px; font-family: var(--mono); }
+  .topbar-audit-entry {
+    display: flex; align-items: center; gap: 6px;
+    padding: 0 12px; height: 36px; flex-shrink: 0;
+    border-right: 1px solid #1a1a1a;
+    max-width: 280px; overflow: hidden;
+  }
+  .topbar-audit-entry:first-child { padding-left: 0; }
+  .topbar-audit-action { font-weight: 700; font-size: 10px; white-space: nowrap; flex-shrink: 0; }
+  .topbar-audit-action.yes  { color: #22c55e; }
+  .topbar-audit-action.no   { color: #ef4444; }
+  .topbar-audit-action.reset { color: #666; }
+  .topbar-audit-action.dismiss { color: #f59e0b; }
+  .topbar-audit-action.note-actioned { color: #22c55e; }
+  .topbar-audit-action.row-moved { color: #a855f7; }
+  .topbar-audit-who  { color: #555; font-size: 10px; white-space: nowrap; flex-shrink: 0; }
+  .topbar-audit-copy { color: #383838; font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .topbar-audit-toggle {
+    flex-shrink: 0; margin-left: 10px;
+    font-family: var(--mono); font-size: 9px; font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: #444; cursor: pointer; padding: 2px 8px;
+    border: 1px solid #222; border-radius: 3px; background: none;
+    transition: all 0.12s; white-space: nowrap;
+  }
+  .topbar-audit-toggle:hover { color: #888; border-color: #333; }
+  /* audit body panel — drops below topbar */
+  .audit-panel {
+    position: sticky; top: 98px; z-index: 99;
+    background: #0a0a0a; border-bottom: 1px solid #1a1a1a;
+    max-height: 220px; overflow-y: auto;
+    display: none;
+  }
+  .audit-panel.open { display: block; }
+  .audit-panel-entry {
+    display: grid; grid-template-columns: 160px 80px 100px 1fr;
+    padding: 6px 28px; border-bottom: 1px solid #111;
+    font-family: var(--mono); font-size: 10px; gap: 12px; align-items: baseline;
+  }
+  .audit-panel-entry:last-child { border-bottom: none; }
+  .audit-panel-ts   { color: #444; }
+  .audit-panel-who  { color: #666; font-weight: 600; }
+  .audit-panel-action { font-weight: 700; }
+  .audit-panel-action.yes  { color: #22c55e; }
+  .audit-panel-action.no   { color: #ef4444; }
+  .audit-panel-action.reset { color: #555; }
+  .audit-panel-action.dismiss { color: #f59e0b; }
+  .audit-panel-action.note-actioned { color: #22c55e; }
+  .audit-panel-action.row-moved { color: #a855f7; }
+  .audit-panel-copy { color: #444; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .topbar-left { display: flex; align-items: baseline; gap: 16px; }
+  .topbar-title { font-family: var(--mono); font-weight: 600; font-size: 14px; color: #fff; letter-spacing: -0.02em; }
+  .topbar-sub { font-family: var(--mono); font-size: 10px; color: #666; letter-spacing: 0.08em; text-transform: uppercase; }
+  .topbar-right { display: flex; align-items: center; gap: 10px; }
+
+  .btn {
+    font-family: var(--mono); font-size: 11px; font-weight: 600;
+    padding: 6px 14px; border-radius: 5px; cursor: pointer;
+    border: 1px solid transparent; transition: all 0.15s; white-space: nowrap;
+    letter-spacing: 0.04em;
+  }
+  .btn-figma { background: #1ABCFE18; border-color: #1ABCFE44; color: var(--figma); }
+  .btn-figma:hover { background: #1ABCFE28; }
+  .text-scale-ctrl { display: flex; align-items: center; gap: 4px; }
+  .scale-btn { padding: 4px 7px !important; font-weight: 700; }
+  .scale-label { font-family: var(--mono); font-size: 10px; color: #888; min-width: 34px; text-align: center; letter-spacing: 0.04em; }
+  .btn-save { background: #fff; border-color: #fff2; color: #111; }
+  .btn-save:hover { background: #eee; }
+  .btn-devtoggle { background: transparent; border-color: #333; color: #666; }
+  .btn-devtoggle:hover { border-color: #555; color: #aaa; }
+  .btn-devtoggle.active { border-color: #1ABCFE55; color: #1ABCFE; background: #1ABCFE11; }
+  /* Dev cols toggle switch */
+  .dev-toggle-wrap {
+    display: flex; align-items: center; gap: 8px; cursor: pointer;
+    user-select: none;
+  }
+  .dev-toggle-wrap:hover .dev-toggle-label { color: #ccc; }
+  .dev-toggle-label {
+    font-family: var(--mono); font-size: 11px; font-weight: 600;
+    color: #666; letter-spacing: 0.04em; transition: color 0.15s;
+  }
+  .dev-toggle-track {
+    position: relative; width: 32px; height: 18px;
+    background: #2a2a2a; border: 1px solid #3a3a3a;
+    border-radius: 9px; transition: background 0.2s, border-color 0.2s;
+    flex-shrink: 0;
+  }
+  .dev-toggle-track.on {
+    background: #1ABCFE22; border-color: #1ABCFE66;
+  }
+  .dev-toggle-thumb {
+    position: absolute; top: 2px; left: 2px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: #555; transition: transform 0.2s, background 0.2s;
+  }
+  .dev-toggle-track.on .dev-toggle-thumb {
+    transform: translateX(14px); background: #1ABCFE;
+  }
+
+  /* dev columns hidden by default */
+  .dev-col { display: none; }
+  .show-dev .dev-col { display: table-cell; }
+
+  /* ── ROWS TABLE ── */
+  .rows-panel { width: 100%; background: #f2f1ed; }
+
+  .rows-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    background: #fff;
+  }
+  .rows-table colgroup .col-handle  { width: 28px; }
+  .rows-table colgroup .col-dev     { width: 80px; }
+  .rows-table colgroup .col-copy    { width: auto; }
+  .rows-table colgroup .col-approve { width: 110px; }
+  .rows-table colgroup .col-notes   { width: 200px; }
+
+  /* col headers */
+  .col-headers-row th {
+    font-family: var(--mono); font-size: 9px; font-weight: 600;
+    color: var(--ink-muted); letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 7px 10px;
+    background: #f2f1ed;
+    border-bottom: 1px solid var(--rule);
+    text-align: left;
+  }
+
+  /* data rows */
+  .copy-row { transition: background 0.1s; }
+  .copy-row:last-child td { border-bottom: none; }
+  .copy-row:hover { background: #fafaf8; }
+  .copy-row.approved { background: var(--approved-bg); }
+  .copy-row.flagged  { background: var(--flagged-bg); }
+  .copy-row.has-warn { background: var(--warn-bg); }
+  .copy-row.copy-edited .td-copy { border-left: 3px solid #1ABCFE; }
+  .copy-row.copy-edited .td-copy::after { content: ' ✎'; color: #1ABCFE; font-size: 11px; font-style: normal; }
+  .original-copy-hint { font-size: 10px; color: #999; font-family: var(--mono); margin-top: 3px; font-style: italic; }
+  .copy-row.row-moved .td-handle { border-left: 3px solid #a855f7; }
+  .row-moved-badge {
+    display: inline-flex; align-items: center; gap: 3px;
+    font-family: var(--mono); font-size: 9px; font-weight: 600;
+    letter-spacing: 0.05em; text-transform: uppercase;
+    color: #a855f7; background: #faf5ff; border: 1px solid #d8b4fe;
+    border-radius: 3px; padding: 1px 5px; margin-top: 3px;
+  }
+  .copy-row.row-dragging { opacity: 0.35; }
+  .copy-row.row-drag-over td:first-child { box-shadow: inset 0 2px 0 #1ABCFE; }
+
+  .copy-row td {
+    padding: 7px 10px;
+    border-bottom: 1px solid var(--rule);
+    border-right: 1px solid var(--rule);
+    vertical-align: top;
+    font-size: var(--copy-size);
+    line-height: 1.5;
+    word-break: break-word;
+  }
+  .copy-row td:last-child { border-right: none; }
+
+  .td-handle {
+    color: #ccc; font-size: 11px; cursor: grab;
+    text-align: center; padding: 8px 4px !important;
+    user-select: none; vertical-align: middle !important;
+  }
+  .td-handle:hover { color: #888; }
+  .td-handle:active { cursor: grabbing; }
+  .td-muted { color: var(--ink-muted); font-size: 10px; font-family: var(--mono); }
+
+  /* editable copy cell */
+  .td-copy { font-family: var(--mono); }
+  .td-copy[contenteditable="true"] { outline: none; cursor: text; }
+  .td-copy[contenteditable="true"]:focus {
+    background: #fffef5;
+    box-shadow: inset 0 0 0 2px #facc1566;
+  }
+
+  /* approved cell */
+  .td-approved {
+    text-align: center; vertical-align: middle !important;
+    white-space: nowrap;
+  }
+  .td-approved-inner { display: flex; align-items: center; justify-content: center; }
+  .td-approved-btns  { display: flex; gap: 4px; align-items: center; }
+  .approve-btn {
+    font-family: var(--mono); font-size: 10px; font-weight: 600;
+    padding: 4px 8px; border-radius: 4px; cursor: pointer;
+    border: 1.5px solid transparent; transition: all 0.12s;
+    letter-spacing: 0.02em;
+  }
+  .approve-btn.yes { border-color: #4ade8066; color: #1a5c38; background: #d6f0e2; }
+  .approve-btn.yes:hover, .approve-btn.yes.active { background: #22c55e; color: #fff; border-color: #22c55e; }
+  .approve-btn.no  { border-color: #f8717166; color: #8a1a1a; background: #ffd6d6; }
+  .approve-btn.no:hover,  .approve-btn.no.active  { background: #ef4444; color: #fff; border-color: #ef4444; }
+  .approve-btn.reset { border-color: #ddd; color: #aaa; background: transparent; font-size: 13px; padding: 2px 5px; line-height: 1; }
+  .approve-btn.reset:hover { border-color: #bbb; color: #555; background: #f0f0f0; }
+
+  /* notes cell */
+  .td-notes { font-size: var(--copy-size); color: #555; font-style: italic; font-family: var(--sans); }
+  .td-notes[contenteditable="true"] { outline: none; cursor: text; }
+  .td-notes[contenteditable="true"]:focus { background: #fffef5; }
+  .td-notes.note-actioned { color: #aaa; text-decoration: line-through; font-style: italic; }
+  .note-action-btn {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-family: var(--mono); font-size: 9px; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: #aaa; border: 1px solid #e0ddd6; border-radius: 3px;
+    padding: 2px 6px; background: none; cursor: pointer;
+    margin-top: 4px; transition: all 0.12s;
+  }
+  .note-action-btn:hover { color: #22c55e; border-color: #22c55e; background: #f0fdf4; }
+  .note-action-btn.actioned { color: #22c55e; border-color: #22c55e88; background: #f0fdf4; }
+  .note-action-btn.actioned:hover { color: #888; border-color: #ddd; background: none; }
+
+
+  /* ── LAYOUT ── */
+  .page { padding: 24px 28px 80px; max-width: 1400px; margin: 0 auto; }
+
+  }
+
+  .hint {
+    font-family: var(--mono); font-size: 10px; color: var(--ink-muted);
+    letter-spacing: 0.06em; margin-bottom: 14px;
+  }
+
+
+
+  /* ── SECTION BLOCK ── */
+  .section {
+    background: var(--surface);
+    border: 1.5px solid var(--rule);
+    border-radius: 10px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    transition: box-shadow 0.15s, border-color 0.15s;
+  }
+  .section.drag-over {
+    border-color: #1ABCFE;
+    box-shadow: 0 0 0 3px #1ABCFE22;
+  }
+  .section.dragging { opacity: 0.45; }
+
+  /* ── SECTION HEADER ── */
+  .section-header {
+    display: flex; align-items: stretch;
+    cursor: grab; user-select: none;
+    border-bottom: 1px solid var(--rule);
+  }
+  .section-header:active { cursor: grabbing; }
+
+  .section-drag-handle {
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; min-width: 32px;
+    background: #f5f4f0;
+    border-right: 1px solid var(--rule);
+    color: #bbb;
+    font-size: 14px;
+  }
+
+  .section-meta {
+    flex: 1; display: flex; align-items: center; gap: 12px;
+    padding: 10px 16px;
+  }
+
+  .tmpl-badge {
+    font-family: var(--mono); font-weight: 600; font-size: 10px;
+    padding: 3px 9px; border-radius: 4px; letter-spacing: 0.08em;
+    flex-shrink: 0;
+  }
+  .section-title {
+    font-family: var(--mono); font-weight: 600; font-size: 12px;
+    letter-spacing: -0.01em;
+  }
+  .section-frame {
+    font-family: var(--mono); font-size: 10px; color: var(--ink-muted);
+    margin-left: auto; white-space: nowrap;
+  }
+
+
+  .section-toggle {
+    display: flex; align-items: center; justify-content: center;
+    width: 40px; border-left: 1px solid var(--rule);
+    background: none; border-top: none; border-bottom: none; border-right: none;
+    cursor: pointer; color: #aaa; font-size: 12px;
+    transition: color 0.15s;
+  }
+  .section-toggle:hover { color: var(--ink); }
+
+  /* ── FLAG NOTE ── */
+  .flag-note {
+    background: var(--warn-bg);
+    border-bottom: 1px solid #dbb700;
+    padding: 7px 16px 7px 48px;
+    font-family: var(--mono); font-size: 10px;
+    color: var(--warn-ink); font-style: italic;
+  }
+
+  /* ── SECTION BODY: two-col ── */
+  .section-body {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+  }
+  .section-body.collapsed { display: none; }
+
+  /* ── PREVIEW PANEL ── */
+  .preview-panel {
+    border-right: 1px solid var(--rule);
+    background: #f9f8f5;
+    display: flex; flex-direction: column;
+    align-items: center;
+    padding: 16px 12px;
+    gap: 8px;
+  }
+  .preview-panel img {
+    width: 100%; max-width: 160px;
+    border-radius: 6px;
+    border: 1px solid var(--rule);
+    display: block;
+    box-shadow: 0 2px 8px #0000000d;
+    cursor: zoom-in;
+    transition: box-shadow 0.15s, transform 0.15s;
+  }
+  .preview-panel img:hover {
+    box-shadow: 0 4px 16px #00000022;
+    transform: scale(1.02);
+  }
+  .preview-label {
+    font-family: var(--mono); font-size: 9px; color: var(--ink-muted);
+    text-align: center; letter-spacing: 0.06em;
+  }
+  .preview-zoom-hint {
+    font-family: var(--mono); font-size: 9px; color: #bbb;
+    letter-spacing: 0.04em;
+  }
+
+  /* ── LIGHTBOX ── */
+  .lightbox {
+    position: fixed; inset: 0; z-index: 1000;
+    background: #151515d9;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.2s;
+    backdrop-filter: blur(4px);
+  }
+  .lightbox.open {
+    opacity: 1; pointer-events: all;
+  }
+  .lightbox-inner {
+    position: relative;
+    display: flex; flex-direction: column; align-items: center; gap: 12px;
+    max-height: 92vh;
+  }
+  .lightbox-img {
+    max-height: 82vh;
+    max-width: 90vw;
+    border-radius: 10px;
+    box-shadow: 0 24px 80px #00000088;
+    display: block;
+    transform: scale(0.95);
+    transition: transform 0.2s;
+  }
+  .lightbox.open .lightbox-img {
+    transform: scale(1);
+  }
+  .lightbox-label {
+    font-family: var(--mono); font-size: 11px; color: #aaa;
+    letter-spacing: 0.1em;
+  }
+  .lightbox-close {
+    position: absolute; top: -36px; right: 0;
+    background: none; border: none; color: #fff;
+    font-size: 22px; cursor: pointer; opacity: 0.7;
+    font-family: var(--mono); line-height: 1;
+    padding: 4px 8px;
+  }
+  .lightbox-close:hover { opacity: 1; }
+
+  /* ── ROWS PANEL ── */
+  .rows-panel { flex: 1; overflow: hidden; background: #f2f1ed; }
+
+  /* flag pill — separate from notes */
+  .flag-pill {
+    display: inline-flex; align-items: flex-start; gap: 5px;
+    background: var(--warn-bg); border: 1px solid #dbb700;
+    border-radius: 4px; padding: 4px 7px;
+    font-family: var(--mono); font-size: 10px; color: var(--warn-ink);
+    font-style: italic; line-height: 1.4; margin-bottom: 4px;
+    width: 100%;
+  }
+  .flag-pill-text { flex: 1; }
+  .flag-dismiss {
+    flex-shrink: 0; background: none; border: none; cursor: pointer;
+    color: #9a7000; font-size: 13px; line-height: 1; padding: 0 0 0 2px;
+    font-family: var(--mono); opacity: 0.6;
+  }
+  .flag-dismiss:hover { opacity: 1; color: #8a1a1a; }
+
+  /* ── TEMPLATE COLOUR TOKENS ── */
+  .tmpl-A .tmpl-badge { background: #DCEAFF; color: #1A3A8A; }
+  .tmpl-A .section-header { background: #F0F5FF; }
+  .tmpl-B .tmpl-badge { background: #D6F5E3; color: #1A5C38; }
+  .tmpl-B .section-header { background: #F0FFF5; }
+  .tmpl-C .tmpl-badge { background: #FDEBD0; color: #8A3A08; }
+  .tmpl-C .section-header { background: #FFF8F0; }
+  .tmpl-D .tmpl-badge { background: #F3DAFF; color: #5A1A8A; }
+  .tmpl-D .section-header { background: #FDF0FF; }
+  .tmpl-E .tmpl-badge { background: #D6F0FF; color: #0A5A8A; }
+  .tmpl-E .section-header { background: #F0FBFF; }
+  .tmpl-F .tmpl-badge { background: #FFD6DE; color: #8A1A2E; }
+  .tmpl-F .section-header { background: #FFF0F3; }
+  .tmpl-G .tmpl-badge { background: #E8E8E8; color: #333; }
+  .tmpl-G .section-header { background: #F5F5F5; }
+
+  /* ── SAVE OVERLAY ── */
+  .toast {
+    position: fixed; bottom: 28px; right: 28px;
+    background: #111; color: #fff;
+    font-family: var(--mono); font-size: 11px;
+    padding: 10px 18px; border-radius: 7px;
+    box-shadow: 0 4px 20px #0004;
+    opacity: 0; pointer-events: none;
+    transform: translateY(8px);
+    transition: all 0.2s;
+    z-index: 999;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 900px) {
+    .section-body { grid-template-columns: 140px 1fr; }
+    .show-dev .col-headers, .show-dev .copy-row {
+      grid-template-columns: 28px 60px 100px 100px 1fr 80px 140px;
+    }
+    .col-headers, .copy-row {
+      grid-template-columns: 28px 0 0 0 1fr 80px 140px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-row">
+    <div class="topbar-left">
+      <span class="topbar-title">CMO Survey — Copy Review</span>
+    </div>
+    <div class="topbar-right">
+      <a href="https://www.figma.com/file/hS98TLAaV2OMpheRFaH18Z" target="_blank" class="btn btn-figma">↗ Figma HD</a>
+      <button class="btn btn-ghost" onclick="toggleAll(true)">Collapse all</button>
+      <button class="btn btn-ghost" onclick="toggleAll(false)">Expand all</button>
+      <div class="dev-toggle-wrap" onclick="toggleDevCols()" title="Show/hide dev columns">
+        <span class="dev-toggle-label">Dev cols</span>
+        <div class="dev-toggle-track" id="dev-toggle-track">
+          <div class="dev-toggle-thumb"></div>
+        </div>
+      </div>
+      <div class="text-scale-ctrl">
+        <button class="btn btn-ghost scale-btn" onclick="adjustScale(-1)" title="Decrease text size">A−</button>
+        <span class="scale-label" id="scale-label">100%</span>
+        <button class="btn btn-ghost scale-btn" onclick="adjustScale(1)" title="Increase text size">A+</button>
+      </div>
+      <button class="btn btn-ghost" onclick="exportJSON()">Export JSON</button>
+      <button class="btn btn-save" onclick="saveHTML()">⬇ Save file</button>
+    </div>
+  </div>
+  <div class="topbar-audit-row">
+    <div class="topbar-audit-left">
+      <div class="topbar-audit-reviewer" onclick="event.stopPropagation()">
+        <span class="topbar-audit-label">Reviewer</span>
+        <input class="topbar-reviewer-input" id="reviewer-name" type="text" placeholder="Your name" spellcheck="false">
+      </div>
+      <div class="topbar-audit-divider"></div>
+      <div class="topbar-audit-feed" id="topbar-audit-feed">
+        <span class="topbar-audit-empty" id="topbar-audit-empty">No actions yet</span>
+      </div>
+    </div>
+    <button class="topbar-audit-toggle" id="topbar-audit-toggle" onclick="toggleAuditPanel()">History ▾</button>
+  </div>
+</div>
+<!-- AUDIT PANEL -->
+<div class="audit-panel" id="audit-panel"></div>
+
+
+<!-- MAIN -->
+<div class="page">
+
+  <div class="hint">↕ Drag section headers to reorder sections &nbsp;·&nbsp; ↕ Drag ⠿ row handle to reorder rows within a section &nbsp;·&nbsp; Click copy to edit inline &nbsp;·&nbsp; ⬇ Save file to export</div>
+  <div id="sections-container"></div>
+
+<div class="toast" id="toast"></div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+  <div class="lightbox-inner">
+    <button class="lightbox-close" onclick="closeLightbox()">×</button>
+    <img class="lightbox-img" id="lightbox-img" src="" alt="">
+    <div class="lightbox-label" id="lightbox-label"></div>
+  </div>
+</div>
+
+<script>
+const FIGMA_FILE = 'hS98TLAaV2OMpheRFaH18Z';
+const FIGMA_BASE = `https://www.figma.com/file/${FIGMA_FILE}`;
+
+// ── DATA ─────────────────────────────────────────────────────────────────────
+const SECTIONS = [
+  {
+    "id": "s-A-01",
+    "tmpl": "A",
+    "wf": "WF-A",
+    "frame": "01",
+    "screen": "Splash",
+    "flag": null,
+    "rows": [
+      {
+        "frame": "01",
+        "screen": "Splash",
+        "component": "group_screen",
+        "layer": "txt_subhead",
+        "copy": "Tap anywhere to start",
+        "_userNote": ""
+      }
+    ]
+  },
+  {
+    "id": "s-B-02",
+    "tmpl": "B",
+    "wf": "WF-B",
+    "frame": "02",
+    "screen": "Intro",
+    "flag": null,
+    "rows": [
+      {
+        "frame": "02",
+        "screen": "Intro",
+        "component": "group_headline",
+        "layer": "txt_headline",
+        "copy": "Discover Your Resonant Frequency",
+        "_userNote": ""
+      },
+      {
+        "frame": "02",
+        "screen": "Intro",
+        "component": "group_headline",
+        "layer": "txt_description",
+        "copy": "Every team is powered by distinct currents of energy. Take this quick assessment to map your unique professional frequency and discover the archetype you bring to the overall system.",
+        "_userNote": ""
+      },
+      {
+        "frame": "02",
+        "screen": "Intro",
+        "component": "group_headline",
+        "layer": "txt_footnote",
+        "copy": "Uncover your core archetype and custom energy visualization at the end.",
+        "_userNote": ""
+      },
+      {
+        "frame": "02",
+        "screen": "Intro",
+        "component": "btn_secondary",
+        "layer": "txt_btn_label",
+        "copy": "Start Survey",
+        "_userNote": ""
+      }
+    ]
+  },
+  {
+    "id": "s-C-03",
+    "tmpl": "C",
+    "wf": "WF-C",
+    "frame": "03",
+    "screen": "Q1",
+    "flag": null,
+    "rows": [
+      {
+        "frame": "03",
+        "screen": "Q1",
+        "component": "ui_progress",
+        "layer": "txt_counter",
+        "copy": "1/5",
+        "_userNote": ""
+      },
+      {
+        "frame": "03",
+        "screen": "Q1",
+        "component": "group_content",
+        "layer": "txt_question",
+        "copy": "What’s the one thing keeping you up at night?",
+        "_userNote": ""
+      },
+      {
+        "frame": "03",
+        "screen": "Q1",
+        "component": "group_content",
+        "layer": "txt_label_select",
+        "copy": "Select one:",
+        "_userNote": ""
+      },
+      {
+        "frame": "03",
+        "screen": "Q1",
+        "component": "btn_radio [1]",
+        "layer": "txt_response",
+        "copy": "Proving marketing’s impact in terms the CFO actually believes",
+        "_userNote": ""
+      },
+      {
+        "frame": "03",
+        "screen": "Q1",
+        "component": "btn_radio [2]",
+        "layer": "txt_response",
+        "copy": "Keeping up with AI without chasing every shiny object",
+        "_userNote": ""
+      },
+      {
+        "frame": "03",
+        "screen": "Q1",
+        "component": "btn_radio [3]",
+        "layer": "txt_response",
+        "copy": "Doing more with less...still",
+        "_userNote": ""
+      },
+      {
+        "frame": "03",
+        "screen": "Q1",
+        "component": "btn_radio [4]",
+        "layer": "txt_response",
+        "copy": "Finding and keeping people who can think, not just execute",
+        "_userNote": ""
+      },
+      {
+        "frame": "03",
+        "screen": "Q1",
+        "component": "btn_radio [5]",
+        "layer": "txt_response",
+        "copy": "Staying relevant in a world where the CEO thinks they can do my job with a chatbot",
+        "_userNote": ""
+      },
+      {
+        "frame": "03",
+        "screen": "Q1",
+        "component": "btn_radio [6]",
+        "layer": "txt_response",
+        "copy": "Building long-term brand equity when every incentive rewards short-term performance",
+        "_userNote": ""
+      },
+      {
+        "frame": "03",
+        "screen": "Q1",
+        "component": "btn_radio [7]",
+        "layer": "txt_response",
+        "copy": "Knowing which channels are actually working — and being able to prove it",
+        "_userNote": ""
+      },
+      {
+        "frame": "03",
+        "screen": "Q1",
+        "component": "btn_radio [8]",
+        "layer": "txt_response",
+        "copy": "Getting the organization to move at the speed the market demands",
+        "_userNote": ""
+      },
+      {
+        "frame": "03",
+        "screen": "Q1",
+        "component": "btn_radio [9]",
+        "layer": "txt_response",
+        "copy": "Being the last line of defense between our company and a communications crisis",
+        "_userNote": ""
+      },
+      {
+        "frame": "03",
+        "screen": "Q1",
+        "component": "btn_primary_arrow",
+        "layer": "txt_btn_label",
+        "copy": "Next Question",
+        "_userNote": ""
+      }
+    ]
+  },
+  {
+    "id": "s-D-04",
+    "tmpl": "D",
+    "wf": "WF-D",
+    "frame": "04",
+    "screen": "Q2",
+    "flag": null,
+    "rows": [
+      {
+        "frame": "04",
+        "screen": "Q2",
+        "component": "ui_progress",
+        "layer": "txt_counter",
+        "copy": "2/5",
+        "_userNote": ""
+      },
+      {
+        "frame": "04",
+        "screen": "Q2",
+        "component": "group_content",
+        "layer": "txt_question",
+        "copy": "Which of the following contributed the most to developing your core skills as a CMO?",
+        "_userNote": ""
+      },
+      {
+        "frame": "04",
+        "screen": "Q2",
+        "component": "group_content",
+        "layer": "txt_label_select",
+        "copy": "Select one:",
+        "_userNote": ""
+      },
+      {
+        "frame": "04",
+        "screen": "Q2",
+        "component": "btn_select [1]",
+        "layer": "txt_btn_label",
+        "copy": "Parents / cultural upbringing",
+        "_userNote": ""
+      },
+      {
+        "frame": "04",
+        "screen": "Q2",
+        "component": "btn_select [2]",
+        "layer": "txt_btn_label",
+        "copy": "Formal education (school/university)",
+        "_userNote": ""
+      },
+      {
+        "frame": "04",
+        "screen": "Q2",
+        "component": "btn_select [3]",
+        "layer": "txt_btn_label",
+        "copy": "Self-education",
+        "_userNote": ""
+      },
+      {
+        "frame": "04",
+        "screen": "Q2",
+        "component": "btn_select [4]",
+        "layer": "txt_btn_label",
+        "copy": "On-the-job experience",
+        "_userNote": ""
+      },
+      {
+        "frame": "04",
+        "screen": "Q2",
+        "component": "btn_primary_arrow",
+        "layer": "txt_btn_label",
+        "copy": "Next Question",
+        "_userNote": ""
+      }
+    ]
+  },
+  {
+    "id": "s-C-05",
+    "tmpl": "C",
+    "wf": "WF-C",
+    "frame": "05",
+    "screen": "Q3",
+    "flag": null,
+    "rows": [
+      {
+        "frame": "05",
+        "screen": "Q3",
+        "component": "ui_progress",
+        "layer": "txt_counter",
+        "copy": "3/5",
+        "_userNote": ""
+      },
+      {
+        "frame": "05",
+        "screen": "Q3",
+        "component": "group_screen",
+        "layer": "txt_question",
+        "copy": "What drives you to be a marketing leader?",
+        "_userNote": ""
+      },
+      {
+        "frame": "05",
+        "screen": "Q3",
+        "component": "group_screen",
+        "layer": "txt_label_select",
+        "copy": "Select one:",
+        "_userNote": ""
+      },
+      {
+        "frame": "05",
+        "screen": "Q3",
+        "component": "btn_radio [1]",
+        "layer": "txt_response",
+        "copy": "Watching teammates and peers grow",
+        "_userNote": ""
+      },
+      {
+        "frame": "05",
+        "screen": "Q3",
+        "component": "btn_radio [2]",
+        "layer": "txt_response",
+        "copy": "Ability to shape internal conversations and direction",
+        "_userNote": ""
+      },
+      {
+        "frame": "05",
+        "screen": "Q3",
+        "component": "btn_radio [3]",
+        "layer": "txt_response",
+        "copy": "Driving industry dialogue and direction",
+        "_userNote": ""
+      },
+      {
+        "frame": "05",
+        "screen": "Q3",
+        "component": "btn_radio [4]",
+        "layer": "txt_response",
+        "copy": "Helping my company be an industry leader",
+        "_userNote": ""
+      },
+      {
+        "frame": "05",
+        "screen": "Q3",
+        "component": "btn_radio [5]",
+        "layer": "txt_response",
+        "copy": "The respect I earn from my peers both internally and externally",
+        "_userNote": ""
+      },
+      {
+        "frame": "05",
+        "screen": "Q3",
+        "component": "btn_radio [6]",
+        "layer": "txt_response",
+        "copy": "Using business as a platform for societal change and impact",
+        "_userNote": ""
+      },
+      {
+        "frame": "05",
+        "screen": "Q3",
+        "component": "btn_radio [7]",
+        "layer": "txt_response",
+        "copy": "Opportunity to lead business innovation and transformation",
+        "_userNote": ""
+      },
+      {
+        "frame": "05",
+        "screen": "Q3",
+        "component": "btn_radio [8]",
+        "layer": "txt_response",
+        "copy": "Continues self improvement and growth",
+        "_userNote": "",
+        "_flag": "⚠ Typo? “Continues” — likely “Continued self-improvement”"
+      },
+      {
+        "frame": "05",
+        "screen": "Q3",
+        "component": "btn_primary_arrow",
+        "layer": "txt_btn_label",
+        "copy": "Next Question",
+        "_userNote": ""
+      }
+    ]
+  },
+  {
+    "id": "s-C-06",
+    "tmpl": "C",
+    "wf": "WF-C",
+    "frame": "06",
+    "screen": "Q4",
+    "flag": null,
+    "rows": [
+      {
+        "frame": "06",
+        "screen": "Q4",
+        "component": "ui_progress",
+        "layer": "txt_counter",
+        "copy": "4/5",
+        "_userNote": ""
+      },
+      {
+        "frame": "06",
+        "screen": "Q4",
+        "component": "group_content",
+        "layer": "txt_question",
+        "copy": "Outside of marketing, what topic could you give a 20-minute talk about with zero preparation?",
+        "_userNote": ""
+      },
+      {
+        "frame": "06",
+        "screen": "Q4",
+        "component": "group_content",
+        "layer": "txt_label_select",
+        "copy": "Select one:",
+        "_userNote": ""
+      },
+      {
+        "frame": "06",
+        "screen": "Q4",
+        "component": "btn_radio [1]",
+        "layer": "txt_response",
+        "copy": "Travel",
+        "_userNote": ""
+      },
+      {
+        "frame": "06",
+        "screen": "Q4",
+        "component": "btn_radio [2]",
+        "layer": "txt_response",
+        "copy": "Food & Wine",
+        "_userNote": ""
+      },
+      {
+        "frame": "06",
+        "screen": "Q4",
+        "component": "btn_radio [3]",
+        "layer": "txt_response",
+        "copy": "Sports & Fitness",
+        "_userNote": ""
+      },
+      {
+        "frame": "06",
+        "screen": "Q4",
+        "component": "btn_radio [4]",
+        "layer": "txt_response",
+        "copy": "Technology and gadgets",
+        "_userNote": ""
+      },
+      {
+        "frame": "06",
+        "screen": "Q4",
+        "component": "btn_radio [5]",
+        "layer": "txt_response",
+        "copy": "Books / podcasts / media",
+        "_userNote": ""
+      },
+      {
+        "frame": "06",
+        "screen": "Q4",
+        "component": "btn_radio [6]",
+        "layer": "txt_response",
+        "copy": "Music",
+        "_userNote": ""
+      },
+      {
+        "frame": "06",
+        "screen": "Q4",
+        "component": "btn_radio [7]",
+        "layer": "txt_response",
+        "copy": "Parenting",
+        "_userNote": ""
+      },
+      {
+        "frame": "06",
+        "screen": "Q4",
+        "component": "btn_radio [8]",
+        "layer": "txt_response",
+        "copy": "Pets",
+        "_userNote": ""
+      },
+      {
+        "frame": "06",
+        "screen": "Q4",
+        "component": "btn_radio [9]",
+        "layer": "txt_response",
+        "copy": "Fashion",
+        "_userNote": ""
+      },
+      {
+        "frame": "06",
+        "screen": "Q4",
+        "component": "btn_primary_arrow",
+        "layer": "txt_btn_label",
+        "copy": "Next Question",
+        "_userNote": ""
+      }
+    ]
+  },
+  {
+    "id": "s-E-07",
+    "tmpl": "E",
+    "wf": "WF-E",
+    "frame": "07",
+    "screen": "Q5",
+    "flag": null,
+    "rows": [
+      {
+        "frame": "07",
+        "screen": "Q5",
+        "component": "ui_progress",
+        "layer": "txt_counter",
+        "copy": "5/5",
+        "_userNote": ""
+      },
+      {
+        "frame": "07",
+        "screen": "Q5",
+        "component": "group_screen",
+        "layer": "txt_question",
+        "copy": "Which function of being in the leadership role do you take the most pride in?",
+        "_userNote": ""
+      },
+      {
+        "frame": "07",
+        "screen": "Q5",
+        "component": "group_screen",
+        "layer": "txt_label_select",
+        "copy": "Select one:",
+        "_userNote": ""
+      },
+      {
+        "frame": "07",
+        "screen": "Q5",
+        "component": "btn_select [1]",
+        "layer": "txt_btn_label",
+        "copy": "Translating strategy into narratives people believe in",
+        "_userNote": ""
+      },
+      {
+        "frame": "07",
+        "screen": "Q5",
+        "component": "btn_select [2]",
+        "layer": "txt_btn_label",
+        "copy": "Pushing the organization to rethink assumptions",
+        "_userNote": ""
+      },
+      {
+        "frame": "07",
+        "screen": "Q5",
+        "component": "btn_select [3]",
+        "layer": "txt_btn_label",
+        "copy": "Bringing people and ideas together across the business",
+        "_userNote": ""
+      },
+      {
+        "frame": "07",
+        "screen": "Q5",
+        "component": "btn_select [4]",
+        "layer": "txt_btn_label",
+        "copy": "Testing new ideas and learning fast",
+        "_userNote": ""
+      },
+      {
+        "frame": "07",
+        "screen": "Q5",
+        "component": "btn_select [5]",
+        "layer": "txt_btn_label",
+        "copy": "Investing most in developing people and talent",
+        "_userNote": ""
+      }
+    ]
+  },
+  {
+    "id": "s-F-08-1",
+    "tmpl": "F",
+    "wf": "WF-F",
+    "frame": "08.1",
+    "screen": "Persona – Storyteller",
+    "flag": null,
+    "rows": [
+      {
+        "frame": "08.1",
+        "screen": "Persona – Storyteller",
+        "component": "group_screen",
+        "layer": "txt_eyebrow",
+        "copy": "You are:",
+        "_userNote": ""
+      },
+      {
+        "frame": "08.1",
+        "screen": "Persona – Storyteller",
+        "component": "group_screen",
+        "layer": "txt_headline",
+        "copy": "The Storyteller",
+        "_userNote": ""
+      },
+      {
+        "frame": "08.1",
+        "screen": "Persona – Storyteller",
+        "component": "group_persona",
+        "layer": "txt_persona_storyteller",
+        "copy": "You are a master at articulating the vision to your team, customers, and the industry at large. You use story to clarify the why, and make people believe what’s possible to move them from vision to execution.",
+        "_userNote": ""
+      },
+      {
+        "frame": "08.1",
+        "screen": "Persona – Storyteller",
+        "component": "btn_secondary",
+        "layer": "txt_btn_label",
+        "copy": "Done",
+        "_userNote": ""
+      }
+    ]
+  },
+  {
+    "id": "s-F-08-2",
+    "tmpl": "F",
+    "wf": "WF-F",
+    "frame": "08.2",
+    "screen": "Persona – Challenger",
+    "flag": null,
+    "rows": [
+      {
+        "frame": "08.2",
+        "screen": "Persona – Challenger",
+        "component": "group_screen",
+        "layer": "txt_eyebrow",
+        "copy": "You are:",
+        "_userNote": ""
+      },
+      {
+        "frame": "08.2",
+        "screen": "Persona – Challenger",
+        "component": "group_screen",
+        "layer": "txt_headline",
+        "copy": "The Challenger",
+        "_userNote": ""
+      },
+      {
+        "frame": "08.2",
+        "screen": "Persona – Challenger",
+        "component": "group_persona",
+        "layer": "txt_persona_challenger",
+        "copy": "You’re never afraid to question and push back, but always with the intention to improve or refine. You’re the counterweight for the idealistic and inspirational, leading the vision from aspiration to reality.",
+        "_userNote": ""
+      },
+      {
+        "frame": "08.2",
+        "screen": "Persona – Challenger",
+        "component": "btn_secondary",
+        "layer": "txt_btn_label",
+        "copy": "Done",
+        "_userNote": ""
+      }
+    ]
+  },
+  {
+    "id": "s-F-08-3",
+    "tmpl": "F",
+    "wf": "WF-F",
+    "frame": "08.3",
+    "screen": "Persona – Connector",
+    "flag": null,
+    "rows": [
+      {
+        "frame": "08.3",
+        "screen": "Persona – Connector",
+        "component": "group_screen",
+        "layer": "txt_eyebrow",
+        "copy": "You are:",
+        "_userNote": ""
+      },
+      {
+        "frame": "08.3",
+        "screen": "Persona – Connector",
+        "component": "group_screen",
+        "layer": "txt_headline",
+        "copy": "The Connector",
+        "_userNote": ""
+      },
+      {
+        "frame": "08.3",
+        "screen": "Persona – Connector",
+        "component": "group_persona",
+        "layer": "txt_persona_connector",
+        "copy": "Often can be seen as the operator, you have the ability to build relationships across other archetypes, bringing everyone together to drive collective results and performance.",
+        "_userNote": ""
+      },
+      {
+        "frame": "08.3",
+        "screen": "Persona – Connector",
+        "component": "btn_secondary",
+        "layer": "txt_btn_label",
+        "copy": "Done",
+        "_userNote": ""
+      }
+    ]
+  },
+  {
+    "id": "s-F-08-4",
+    "tmpl": "F",
+    "wf": "WF-F",
+    "frame": "08.4",
+    "screen": "Persona – Experimenter",
+    "flag": null,
+    "rows": [
+      {
+        "frame": "08.4",
+        "screen": "Persona – Experimenter",
+        "component": "group_screen",
+        "layer": "txt_eyebrow",
+        "copy": "You are:",
+        "_userNote": ""
+      },
+      {
+        "frame": "08.4",
+        "screen": "Persona – Experimenter",
+        "component": "group_screen",
+        "layer": "txt_headline",
+        "copy": "The Experimenter",
+        "_userNote": ""
+      },
+      {
+        "frame": "08.4",
+        "screen": "Persona – Experimenter",
+        "component": "group_persona",
+        "layer": "txt_persona_experimenter",
+        "copy": "You aren’t afraid to dive in, fail fast and learn. Seeing what works and shifting when needed. Your instinct to develop initial concepts quickly, helps your organization move fast into new markets and opportunities.",
+        "_userNote": ""
+      },
+      {
+        "frame": "08.4",
+        "screen": "Persona – Experimenter",
+        "component": "btn_secondary",
+        "layer": "txt_btn_label",
+        "copy": "Done",
+        "_userNote": ""
+      }
+    ]
+  },
+  {
+    "id": "s-F-08-5",
+    "tmpl": "F",
+    "wf": "WF-F",
+    "frame": "08.5",
+    "screen": "Persona – Coach",
+    "flag": null,
+    "rows": [
+      {
+        "frame": "08.5",
+        "screen": "Persona – Coach",
+        "component": "group_screen",
+        "layer": "txt_eyebrow",
+        "copy": "You are:",
+        "_userNote": ""
+      },
+      {
+        "frame": "08.5",
+        "screen": "Persona – Coach",
+        "component": "group_screen",
+        "layer": "txt_headline",
+        "copy": "The Coach",
+        "_userNote": ""
+      },
+      {
+        "frame": "08.5",
+        "screen": "Persona – Coach",
+        "component": "group_persona",
+        "layer": "txt_persona_coach",
+        "copy": "You’re the teaching leader. Encouraging the team and giving pointers without interfering in individual contributions. You set the goals, establish the gameplan and let your teams complete the plays.",
+        "_userNote": ""
+      },
+      {
+        "frame": "08.5",
+        "screen": "Persona – Coach",
+        "component": "btn_secondary",
+        "layer": "txt_btn_label",
+        "copy": "Done",
+        "_userNote": ""
+      }
+    ]
+  },
+  {
+    "id": "s-G-09",
+    "tmpl": "G",
+    "wf": "WF-G",
+    "frame": "09",
+    "screen": "Outro",
+    "flag": null,
+    "rows": [
+      {
+        "frame": "09",
+        "screen": "Outro",
+        "component": "group_headline",
+        "layer": "txt_headline",
+        "copy": "Your Frequency is Mapped",
+        "_userNote": ""
+      },
+      {
+        "frame": "09",
+        "screen": "Outro",
+        "component": "group_headline",
+        "layer": "txt_description",
+        "copy": "Thank you for exploring your unique energy. Your wave is a vital part of the greater system.",
+        "_userNote": ""
+      }
+    ]
+  }
+];
+
+// State: approved map { sectionId-rowIndex: 'yes'|'no'|null }
+const approved = {};
+// State: dismissed flags { key: true }
+const dismissedFlags = {};
+// State: audit log [ {ts, who, action, secId, rowIdx, copy} ]
+let auditLog = [];
+// State: save version counter
+let saveVersion = 0;
+
+const _savedApproved = {};
+const _savedDismissed = {};
+Object.assign(approved, _savedApproved);
+Object.assign(dismissedFlags, _savedDismissed);
+loadAuditState([], '');
+// ── RENDER ───────────────────────────────────────────────────────────────────
+function render(sections) {
+  const container = document.getElementById('sections-container');
+  container.innerHTML = '';
+  // Stamp original index on first render only
+  sections.forEach(sec => {
+    sec.rows.forEach((row, ri) => {
+      if (row._originalIndex === undefined) row._originalIndex = ri;
+    });
+  });
+  sections.forEach((sec, si) => {
+    const el = buildSection(sec, si);
+    container.appendChild(el);
+  });
+  updateStats();
+  initDrag();
+}
+
+function buildSection(sec, si) {
+  const div = document.createElement('div');
+  div.className = `section tmpl-${sec.tmpl}`;
+  div.dataset.id = sec.id;
+
+  const firstFrame = sec.frame.includes('–') ? sec.frame.split('–')[0].trim() : sec.frame;
+  const imgSrc = `${firstFrame}.png`;
+
+  // Header
+  const header = document.createElement('div');
+  header.className = 'section-header';
+  header.draggable = true;
+  header.innerHTML = [
+    '<div class="section-drag-handle">\u2803</div>',
+    '<div class="section-meta">',
+    `<span class="section-title">${esc(sec.screen)}</span>`,
+    `<span class="section-frame">Frame ${esc(sec.frame)}</span>`,
+    '</div>',
+    '<button class="section-toggle" onclick="toggleSection(this)" aria-label="Toggle">&#9662;</button>'
+  ].join('');
+  div.appendChild(header);
+
+  // Flag note
+  if (sec.flag) {
+    const fn = document.createElement('div');
+    fn.className = 'flag-note';
+    fn.textContent = sec.flag;
+    div.appendChild(fn);
+  }
+
+  // Body
+  const body = document.createElement('div');
+  body.className = 'section-body';
+
+  // Preview panel
+  const preview = document.createElement('div');
+  preview.className = 'preview-panel';
+  const img = document.createElement('img');
+  img.src = imgSrc;
+  img.alt = `Frame ${sec.frame} preview`;
+  img.onclick = () => openLightbox(imgSrc, `Frame ${sec.frame} \u2014 ${sec.screen}`);
+  img.onerror = function() {
+    this.parentElement.innerHTML = `<div style="font-family:monospace;font-size:10px;color:#aaa;text-align:center;padding:20px 8px">Place<br>${imgSrc}<br>in same folder</div>`;
+  };
+  const lbl = document.createElement('div');
+  lbl.className = 'preview-label';
+  lbl.textContent = `Frame ${sec.frame}`;
+  const hint = document.createElement('div');
+  hint.className = 'preview-zoom-hint';
+  hint.textContent = 'click to enlarge';
+  preview.appendChild(img);
+  preview.appendChild(lbl);
+  preview.appendChild(hint);
+  body.appendChild(preview);
+
+  // Rows panel + table
+  const rowsPanel = document.createElement('div');
+  rowsPanel.className = 'rows-panel';
+
+  const table = document.createElement('table');
+  table.className = 'rows-table';
+
+  // colgroup
+  const cg = document.createElement('colgroup');
+  [[28,''], [90,'dev-col'], [110,'dev-col'], [70,'dev-col'], [0,''], [110,''], [200,'']].forEach(([w, cls]) => {
+    const col = document.createElement('col');
+    if (w) col.style.width = w + 'px';
+    if (cls) col.className = cls;
+    cg.appendChild(col);
+  });
+  table.appendChild(cg);
+
+  // thead
+  const thead = document.createElement('thead');
+  const hdrRow = document.createElement('tr');
+  hdrRow.className = 'col-headers-row';
+  [['',''], ['Component','dev-col'], ['Layer','dev-col'], ['Template','dev-col'],
+   ['Current Copy',''], ['Approved',''], ['Notes / Comments','']].forEach(([txt, cls]) => {
+    const th = document.createElement('th');
+    th.textContent = txt;
+    if (cls) th.className = cls;
+    hdrRow.appendChild(th);
+  });
+  thead.appendChild(hdrRow);
+  table.appendChild(thead);
+
+  // tbody
+  const tbody = document.createElement('tbody');
+  sec.rows.forEach((row, ri) => tbody.appendChild(buildRow(sec, si, row, ri)));
+  table.appendChild(tbody);
+
+  rowsPanel.appendChild(table);
+  body.appendChild(rowsPanel);
+  div.appendChild(body);
+  return div;
+}
+
+function buildRow(sec, si, row, ri) {
+  const key = `${sec.id}-${ri}`;
+  const state = approved[key] || null;
+  const flagDismissed = dismissedFlags[key] || false;
+  const hasFlag = row.note && row.note.startsWith('⚠') && !flagDismissed;
+  const flagText = (row.note && row.note.startsWith('⚠')) ? row.note : null;
+  const userNote = (row._userNote && row._userNote !== 'null') ? row._userNote : '';
+
+  const tr = document.createElement('tr');
+  const isEdited = row._copyEdited === true;
+  const isMoved  = row._rowMoved === true;
+  tr.className = 'copy-row' + (state === 'yes' ? ' approved' : state === 'no' ? ' flagged' : hasFlag ? ' has-warn' : '') + (isEdited ? ' copy-edited' : '') + (isMoved ? ' row-moved' : '');
+  tr.dataset.key = key;
+  tr.draggable = false;
+
+  // Handle
+  const tdHandle = document.createElement('td');
+  tdHandle.className = 'td-handle';
+  tdHandle.title = 'Drag to reorder';
+  tdHandle.textContent = '\u2803';
+  tdHandle.draggable = true;
+  tr.appendChild(tdHandle);
+
+  // Dev cols
+  [row.component, row.layer, sec.wf || ''].forEach(val => {
+    const td = document.createElement('td');
+    td.className = 'td-muted dev-col';
+    td.textContent = val;
+    tr.appendChild(td);
+  });
+
+  // Copy
+  const tdCopy = document.createElement('td');
+  tdCopy.className = 'td-copy';
+  tdCopy.contentEditable = 'true';
+  tdCopy.dataset.field = 'copy';
+  tdCopy.dataset.key = key;
+  tdCopy.textContent = row.copy;
+  if (isEdited && row._originalCopy) {
+    const orig = document.createElement('div');
+    orig.className = 'original-copy-hint';
+    orig.textContent = 'was: ' + row._originalCopy;
+    tdCopy.appendChild(orig);
+  }
+  tr.appendChild(tdCopy);
+
+  // Approved
+  const tdApproved = document.createElement('td');
+  tdApproved.className = 'td-approved';
+  const inner = document.createElement('div');
+  inner.className = 'td-approved-inner';
+  const btns = document.createElement('div');
+  btns.className = 'td-approved-btns';
+  const mkBtn = (cls, label, action) => {
+    const b = document.createElement('button');
+    b.className = `approve-btn ${cls}`;
+    b.textContent = label;
+    b.onclick = action;
+    return b;
+  };
+  btns.appendChild(mkBtn('yes' + (state === 'yes' ? ' active' : ''), 'Yes', () => setApproval(key, 'yes')));
+  btns.appendChild(mkBtn('no'  + (state === 'no'  ? ' active' : ''), 'No',  () => setApproval(key, 'no')));
+  if (state) btns.appendChild(mkBtn('reset', '×', () => setApproval(key, null)));
+  inner.appendChild(btns);
+  tdApproved.appendChild(inner);
+  tr.appendChild(tdApproved);
+
+  // Notes
+  const tdNotes = document.createElement('td');
+  tdNotes.className = 'td-notes-wrap';
+  if (flagText && !flagDismissed) {
+    const pill = document.createElement('div');
+    pill.className = 'flag-pill';
+    const pillText = document.createElement('span');
+    pillText.className = 'flag-pill-text';
+    pillText.textContent = flagText;
+    const pillBtn = document.createElement('button');
+    pillBtn.className = 'flag-dismiss';
+    pillBtn.title = 'Dismiss flag';
+    pillBtn.textContent = '×';
+    pillBtn.onclick = () => dismissFlag(key);
+    pill.appendChild(pillText);
+    pill.appendChild(pillBtn);
+    tdNotes.appendChild(pill);
+  }
+  const noteDiv = document.createElement('div');
+  noteDiv.className = 'td-notes' + (row._noteActioned ? ' note-actioned' : '');
+  noteDiv.contentEditable = 'true';
+  noteDiv.dataset.field = 'usernote';
+  noteDiv.dataset.key = key;
+  noteDiv.textContent = userNote;
+  tdNotes.appendChild(noteDiv);
+
+  // Actioned button — shows when there's a PM note
+  if (userNote) {
+    const actionBtn = document.createElement('button');
+    actionBtn.className = 'note-action-btn' + (row._noteActioned ? ' actioned' : '');
+    actionBtn.textContent = row._noteActioned ? '✓ Actioned' : '○ Mark actioned';
+    actionBtn.title = row._noteActioned ? 'Click to un-action' : 'Mark this note as actioned';
+    actionBtn.onclick = (e) => { e.stopPropagation(); toggleNoteActioned(key); };
+    tdNotes.appendChild(actionBtn);
+  }
+
+  // Moved badge
+  if (isMoved) {
+    const badge = document.createElement('div');
+    badge.className = 'row-moved-badge';
+    badge.title = `Originally position ${(row._originalIndex + 1)}`;
+    badge.textContent = `↕ Reordered (was #${row._originalIndex + 1})`;
+    tdNotes.appendChild(badge);
+  }
+
+  tr.appendChild(tdNotes);
+
+  return tr;
+}
+
+function esc(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── APPROVAL ─────────────────────────────────────────────────────────────────
+function setApproval(key, val) {
+  if (approved[key] === val) return; // no change — don't log or re-render
+  approved[key] = val;
+  const parts = key.split('-');
+  const ri = parseInt(parts[parts.length - 1]);
+  const secId = parts.slice(0, parts.length - 1).join('-');
+  const sec = currentSections().find(s => s.id === secId);
+  if (!sec) return;
+  const si = currentSections().indexOf(sec);
+  const copyText = sec.rows[ri] ? sec.rows[ri].copy : '';
+  if (val) logAction(key, val, copyText);
+  else     logAction(key, 'reset', copyText);
+  const rowEl = document.querySelector(`[data-key="${key}"].copy-row`);
+  if (rowEl) rowEl.replaceWith(buildRow(sec, si, sec.rows[ri], ri));
+  updateStats();
+}
+
+// ── DISMISS FLAG ──────────────────────────────────────────────────────────────
+function dismissFlag(key) {
+  dismissedFlags[key] = true;
+  const rowEl = document.querySelector(`[data-key="${key}"].copy-row`);
+  if (!rowEl) return;
+  const parts = key.split('-');
+  const ri = parseInt(parts[parts.length - 1]);
+  const secId = parts.slice(0, parts.length - 1).join('-');
+  const sec = currentSections().find(s => s.id === secId);
+  if (!sec) return;
+  const si = currentSections().indexOf(sec);
+  const noteEl = rowEl.querySelector('[data-field="usernote"]');
+  if (noteEl) { const v = noteEl.innerText.trim(); sec.rows[ri]._userNote = (v && v !== 'null') ? v : ''; }
+  const copyText = sec.rows[ri] ? sec.rows[ri].copy : '';
+  logAction(key, 'dismiss', copyText);
+  rowEl.replaceWith(buildRow(sec, si, sec.rows[ri], ri));
+  updateStats();
+}
+function toggleSection(btn) {
+  const body = btn.closest('.section').querySelector('.section-body');
+  const collapsed = body.classList.toggle('collapsed');
+  btn.textContent = collapsed ? '▸' : '▾';
+  btn.closest('.section-header').style.cursor = collapsed ? 'grab' : 'grab';
+}
+
+// ── TEXT SCALE ────────────────────────────────────────────────────────────────
+const SCALE_STEPS = [10, 11, 12, 13, 14, 16, 18, 20, 22, 24];
+let scaleIdx = 4; // default 14px
+
+function adjustScale(dir) {
+  scaleIdx = Math.max(0, Math.min(SCALE_STEPS.length - 1, scaleIdx + dir));
+  const px = SCALE_STEPS[scaleIdx];
+  document.documentElement.style.setProperty('--copy-size', px + 'px');
+  const base = SCALE_STEPS[4]; // 14px = 100%
+  const pct = Math.round((px / base) * 100);
+  document.getElementById('scale-label').textContent = pct + '%';
+}
+
+function toggleAll(collapse) {
+  document.querySelectorAll('.section-body').forEach(b => {
+    b.classList.toggle('collapsed', collapse);
+  });
+  document.querySelectorAll('.section-toggle').forEach(btn => {
+    btn.textContent = collapse ? '▸' : '▾';
+  });
+}
+
+// ── STATS ─────────────────────────────────────────────────────────────────────
+// ── AUDIT TRAIL ───────────────────────────────────────────────────────────────
+function getReviewer() {
+  const el = document.getElementById('reviewer-name');
+  return (el && el.value.trim()) || 'Unknown';
+}
+
+function logAction(key, action, copyText) {
+  const now = new Date();
+  const date = now.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+  const time = now.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' });
+  const ts = `${date}, ${time}`;
+  auditLog.push({ ts, who: getReviewer(), action, key, copy: copyText || '' });
+  renderAuditLog();
+}
+
+function renderAuditLog() {
+  const feed = document.getElementById('topbar-audit-feed');
+  const empty = document.getElementById('topbar-audit-empty');
+  const panel = document.getElementById('audit-panel');
+  if (!feed) return;
+
+  // Clear feed (keep empty span)
+  [...feed.querySelectorAll('.topbar-audit-entry')].forEach(el => el.remove());
+
+  const actionLabels = { yes: '✓ Approved', no: '✗ Flagged', reset: '↺ Reset', dismiss: '⚠ Dismissed', 'note-actioned': '✓ Actioned', 'note-unactioned': '↺ Un-actioned', 'row-moved': '↕ Reordered' };
+  const actionClass  = { yes: 'yes', no: 'no', reset: 'reset', dismiss: 'dismiss', 'note-actioned': 'note-actioned', 'note-unactioned': 'reset', 'row-moved': 'row-moved' };
+
+  if (auditLog.length === 0) {
+    if (empty) empty.style.display = '';
+    if (panel) panel.innerHTML = '';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+
+  // Show last 4 entries inline in the feed (newest first)
+  const recent = [...auditLog].reverse().slice(0, 4);
+  recent.forEach(entry => {
+    const el = document.createElement('div');
+    el.className = 'topbar-audit-entry';
+    const label = actionLabels[entry.action] || entry.action;
+    const cls = actionClass[entry.action] || '';
+    el.innerHTML = `<span class="topbar-audit-action ${cls}">${esc(label)}</span><span class="topbar-audit-who">${esc(entry.who)}</span><span class="topbar-audit-copy">${esc(entry.copy)}</span>`;
+    feed.appendChild(el);
+  });
+
+  // Rebuild full panel (newest first)
+  if (panel) {
+    panel.innerHTML = '';
+    [...auditLog].reverse().forEach(entry => {
+      const row = document.createElement('div');
+      row.className = 'audit-panel-entry';
+      const label = actionLabels[entry.action] || entry.action;
+      const cls = actionClass[entry.action] || '';
+      row.innerHTML = `<span class="audit-panel-ts">${esc(entry.ts)}</span><span class="audit-panel-who">${esc(entry.who)}</span><span class="audit-panel-action ${cls}">${esc(label)}</span><span class="audit-panel-copy" title="${esc(entry.copy)}">${esc(entry.copy)}</span>`;
+      panel.appendChild(row);
+    });
+  }
+}
+
+function toggleAuditPanel() {
+  const panel = document.getElementById('audit-panel');
+  const toggle = document.getElementById('topbar-audit-toggle');
+  if (!panel) return;
+  const open = panel.classList.toggle('open');
+  if (toggle) toggle.textContent = open ? 'History ▴' : 'History ▾';
+}
+
+function loadAuditState(log, reviewerName) {
+  if (Array.isArray(log)) auditLog = log;
+  if (reviewerName) {
+    const el = document.getElementById('reviewer-name');
+    if (el) el.value = reviewerName;
+  }
+  renderAuditLog();
+}
+
+function initReviewerInput() {
+  const el = document.getElementById('reviewer-name');
+  if (!el) return;
+  el.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); el.blur(); }
+    if (e.key === 'Escape') { el.blur(); }
+  });
+}
+
+function updateStats() { /* stats bar removed */ }
+
+// ── NOTE ACTIONED ─────────────────────────────────────────────────────────────
+function toggleNoteActioned(key) {
+  const parts = key.split('-');
+  const ri = parseInt(parts[parts.length - 1]);
+  const secId = parts.slice(0, parts.length - 1).join('-');
+  const sec = currentSections().find(s => s.id === secId);
+  if (!sec) return;
+  // Capture current note text from DOM before rebuild
+  const rowEl = document.querySelector(`[data-key="${key}"].copy-row`);
+  if (rowEl) {
+    const noteEl = rowEl.querySelector('[data-field="usernote"]');
+    if (noteEl) { const v = noteEl.innerText.trim(); sec.rows[ri]._userNote = (v && v !== 'null') ? v : ''; }
+  }
+  sec.rows[ri]._noteActioned = !sec.rows[ri]._noteActioned;
+  const action = sec.rows[ri]._noteActioned ? 'note-actioned' : 'note-unactioned';
+  logAction(key, action, sec.rows[ri]._userNote || sec.rows[ri].copy);
+  const si = currentSections().indexOf(sec);
+  if (rowEl) rowEl.replaceWith(buildRow(sec, si, sec.rows[ri], ri));
+}
+
+// ── DRAG TO REORDER SECTIONS ──────────────────────────────────────────────────
+let dragSrc = null;
+
+function initDrag() {
+  document.querySelectorAll('.section').forEach(sec => {
+    const header = sec.querySelector('.section-header');
+    header.addEventListener('dragstart', e => {
+      dragSrc = sec;
+      sec.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('type', 'section');
+    });
+    header.addEventListener('dragend', () => {
+      sec.classList.remove('dragging');
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('drag-over'));
+      dragSrc = null;
+    });
+    sec.addEventListener('dragover', e => {
+      if (e.dataTransfer.types.includes('type') === false) return; // let row drag handle itself
+      e.preventDefault();
+      if (dragSrc && dragSrc !== sec) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('drag-over'));
+        sec.classList.add('drag-over');
+      }
+    });
+    sec.addEventListener('drop', e => {
+      e.preventDefault();
+      if (dragSrc && dragSrc !== sec) {
+        const container = document.getElementById('sections-container');
+        const secs = [...container.querySelectorAll('.section')];
+        const fromIdx = secs.indexOf(dragSrc);
+        const toIdx   = secs.indexOf(sec);
+        if (fromIdx < toIdx) container.insertBefore(dragSrc, sec.nextSibling);
+        else container.insertBefore(dragSrc, sec);
+        sec.classList.remove('drag-over');
+      }
+    });
+  });
+  initRowDrag();
+}
+
+// ── DRAG TO REORDER ROWS ──────────────────────────────────────────────────────
+let rowDragSrc = null;
+let rowDragSec = null;
+
+function initRowDrag() {
+  document.querySelectorAll('.rows-table tbody').forEach(tbody => {
+    // Use event delegation on the handle cells
+    tbody.addEventListener('dragstart', e => {
+      const handle = e.target.closest('.td-handle');
+      if (!handle) return;
+      const row = handle.closest('.copy-row');
+      if (!row) return;
+      rowDragSrc = row;
+      // find which section this tbody belongs to
+      const secEl = tbody.closest('.section');
+      const secId = secEl ? secEl.dataset.id : null;
+      rowDragSec = secId ? currentSections().find(s => s.id === secId) : null;
+      row.classList.add('row-dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.stopPropagation();
+    });
+
+    tbody.addEventListener('dragend', e => {
+      if (!rowDragSrc) return;
+      rowDragSrc.classList.remove('row-dragging');
+      tbody.querySelectorAll('.copy-row').forEach(r => r.classList.remove('row-drag-over'));
+      rowDragSrc = null;
+      rowDragSec = null;
+    });
+
+    tbody.addEventListener('dragover', e => {
+      if (!rowDragSrc) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const row = e.target.closest('.copy-row');
+      tbody.querySelectorAll('.copy-row').forEach(r => r.classList.remove('row-drag-over'));
+      if (row && row !== rowDragSrc) row.classList.add('row-drag-over');
+    });
+
+    tbody.addEventListener('drop', e => {
+      if (!rowDragSrc) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const target = e.target.closest('.copy-row');
+      if (!target || target === rowDragSrc) return;
+      tbody.querySelectorAll('.copy-row').forEach(r => r.classList.remove('row-drag-over'));
+
+      const domRows = [...tbody.querySelectorAll('.copy-row')];
+      const fromIdx = domRows.indexOf(rowDragSrc);
+      const toIdx   = domRows.indexOf(target);
+
+      // Sync data array
+      if (rowDragSec && fromIdx !== -1 && toIdx !== -1) {
+        const moved = rowDragSec.rows.splice(fromIdx, 1)[0];
+        rowDragSec.rows.splice(toIdx, 0, moved);
+        // Mark moved if not in original position
+        rowDragSec.rows.forEach((row, ri) => {
+          if (row._originalIndex !== undefined && row._originalIndex !== ri) {
+            row._rowMoved = true;
+          }
+        });
+        // Log the move
+        const movedRow = rowDragSec.rows[toIdx];
+        logAction(`${rowDragSec.id}-${toIdx}`, 'row-moved', movedRow.copy);
+      }
+
+      // Move DOM node
+      if (fromIdx < toIdx) tbody.insertBefore(rowDragSrc, target.nextSibling);
+      else tbody.insertBefore(rowDragSrc, target);
+
+      // Re-render affected rows to show/hide moved badge
+      if (rowDragSec) {
+        const si = currentSections().indexOf(rowDragSec);
+        tbody.querySelectorAll('.copy-row').forEach((rowEl, ri) => {
+          const row = rowDragSec.rows[ri];
+          if (row) rowEl.replaceWith(buildRow(rowDragSec, si, row, ri));
+        });
+      }
+
+      rowDragSrc.classList.remove('row-dragging');
+      rowDragSrc = null;
+      rowDragSec = null;
+    });
+  });
+}
+
+// ── CURRENT SECTION ORDER ─────────────────────────────────────────────────────
+function currentSections() {
+  const ids = [...document.querySelectorAll('.section')].map(el => el.dataset.id);
+  return ids.map(id => SECTIONS.find(s => s.id === id)).filter(Boolean);
+}
+
+// ── COLLECT EDITS FROM DOM ────────────────────────────────────────────────────
+function collectEdits() {
+  const edits = {};
+  document.querySelectorAll('[contenteditable][data-key]').forEach(el => {
+    const key = el.dataset.key;
+    const field = el.dataset.field;
+    if (!field || !key) return;
+    if (!edits[key]) edits[key] = {};
+    edits[key][field] = el.innerText.trim();
+  });
+  return edits;
+}
+
+// ── EXPORT JSON ───────────────────────────────────────────────────────────────
+function exportJSON() {
+  const edits = collectEdits();
+  const order = currentSections();
+
+  // Helper: get live copy for a section row
+  function getCopy(secId, ri, fallback) {
+    const key = `${secId}-${ri}`;
+    return (edits[key] && edits[key].copy !== undefined) ? edits[key].copy : fallback;
+  }
+
+  // Hardcoded non-copy config
+  const PERSONA_META = {
+    'storyteller': { accentColor: '#ff9f0a', image: '/persona-storyteller.webp', mantra: `“Every brand has a story worth telling.”` },
+    'challenger':  { accentColor: '#ff2d55', image: '/persona-challenger.webp',  mantra: `“If it’s never been done, that’s exactly why we should try.”` },
+    'connector':   { accentColor: '#32ade6', image: '/persona-connector.webp',   mantra: `“The strongest strategies are built on the strongest relationships.”` },
+    'experimenter':{ accentColor: '#007aff', image: '/persona-experimenter.webp', imageScale: 1.12, imagePosition: 'center 40%', mantra: `“I test the limits to discover what’s next.”` },
+    'coach':       { accentColor: '#ff7f50', image: '/persona-coach.webp',       mantra: `“The best campaigns start with the best people.”` },
+  };
+
+  const QUESTION_META = {
+    's-C-03': { type: 'radio' },
+    's-D-04': { type: 'radio', layout: 'pills' },
+    's-C-05': { type: 'checkbox', selectLabel: 'Select up to three:', maxSelections: 3 },
+    's-C-06': { type: 'radio' },
+    's-E-07': { type: 'radio', layout: 'pills' },
+  };
+
+  const PERSONA_MAP = {
+    'Translating strategy into narratives people believe in': 'storyteller',
+    'Pushing the organization to rethink assumptions': 'challenger',
+    'Bringing people and ideas together across the business': 'connector',
+    'Testing new ideas and learning fast': 'experimenter',
+    'Investing most in developing people and talent': 'coach',
+  };
+
+  // Question sections in frame order
+  const questionSecIds = ['s-C-03','s-D-04','s-C-05','s-C-06','s-E-07'];
+  const personaSecIds  = ['s-F-08-1','s-F-08-2','s-F-08-3','s-F-08-4','s-F-08-5'];
+  const personaOrder   = ['storyteller','challenger','connector','experimenter','coach'];
+
+  const questions = questionSecIds.map(secId => {
+    const sec = SECTIONS.find(s => s.id === secId);
+    if (!sec) return null;
+    const meta = QUESTION_META[secId] || { type: 'radio' };
+
+    // Find question text row (layer = txt_question)
+    const qRow = sec.rows.find(r => r.layer === 'txt_question' || r.layer === 'txt_question');
+    const questionText = qRow ? getCopy(secId, sec.rows.indexOf(qRow), qRow.copy) : '';
+
+    // Find selectLabel if present
+    const labelRow = sec.rows.find(r => r.layer === 'txt_label_select');
+    const selectLabel = (meta.selectLabel || (labelRow ? getCopy(secId, sec.rows.indexOf(labelRow), labelRow.copy) : undefined));
+
+    // Collect options (btn_radio or btn_select rows)
+    const optionRows = sec.rows.filter(r =>
+      r.component.startsWith('btn_radio') || r.component.startsWith('btn_select')
+    );
+    const options = optionRows.map((r, i) => getCopy(secId, sec.rows.indexOf(r), r.copy));
+
+    const q = { ...meta };
+    q.question = questionText;
+    if (meta.selectLabel) q.selectLabel = meta.selectLabel;
+    q.options = options;
+
+    // Add personaMap for Q5
+    if (secId === 's-E-07') {
+      const personaMap = {};
+      options.forEach(opt => {
+        if (PERSONA_MAP[opt]) personaMap[opt] = PERSONA_MAP[opt];
+      });
+      q.personaMap = personaMap;
+    }
+
+    // Remove undefined keys
+    if (!q.selectLabel) delete q.selectLabel;
+    if (!q.maxSelections) delete q.maxSelections;
+    return q;
+  }).filter(Boolean);
+
+  const submitLabel = 'See your trait';
+
+  // Personas — direct map persona id → section id
+  const PERSONA_SEC_MAP = {
+    'storyteller': 's-F-08-1',
+    'challenger':  's-F-08-2',
+    'connector':   's-F-08-3',
+    'experimenter':'s-F-08-4',
+    'coach':       's-F-08-5',
+  };
+
+  const personas = personaOrder.map(personaId => {
+    const secId = PERSONA_SEC_MAP[personaId];
+    const sec = SECTIONS.find(s => s.id === secId);
+    const meta = PERSONA_META[personaId];
+
+    let name = '', description = '';
+    if (sec) {
+      const nameRow = sec.rows.find(r => r.layer === 'txt_headline');
+      const descRow = sec.rows.find(r => r.layer && r.layer.startsWith('txt_persona_'));
+      name = nameRow ? getCopy(secId, sec.rows.indexOf(nameRow), nameRow.copy) : '';
+      description = descRow ? getCopy(secId, sec.rows.indexOf(descRow), descRow.copy) : '';
+    }
+
+    const persona = {
+      id: personaId,
+      name,
+      accentColor: meta.accentColor,
+      image: meta.image,
+    };
+    if (meta.imageScale) persona.imageScale = meta.imageScale;
+    if (meta.imagePosition) persona.imagePosition = meta.imagePosition;
+    persona.description = [description];
+    // @TODO confirm with dev — mantra field may be unused in the build (leftover from earlier design)
+    persona.mantra = meta.mantra;
+    return persona;
+  });
+
+  const output = {
+    offlineSync: true,
+    cookie: 'cmo-survey',
+    display: 'cmo',
+    personaQuestion: 4,
+    submitLabel,
+    questions,
+    personas,
+  };
+
+  const blob = new Blob([JSON.stringify(output, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'cmo-survey.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  showToast('✓ JSON exported — cmo-survey.json');
+}
+
+// ── SAVE / EXPORT HTML ────────────────────────────────────────────────────────
+function saveHTML() {
+  const edits = collectEdits();
+  const order = currentSections();
+
+  // Detect copy changes vs original data and mark them
+  let editCount = 0;
+  const snapshot = order.map(sec => {
+    const s = JSON.parse(JSON.stringify(sec));
+    s.rows = s.rows.map((row, ri) => {
+      const key = `${sec.id}-${ri}`;
+      if (edits[key]) {
+        if (edits[key].copy !== undefined) {
+          const newCopy = edits[key].copy;
+          if (newCopy !== row.copy) {
+            row._originalCopy = row._originalCopy || row.copy; // preserve original
+            row._copyEdited = true;
+            editCount++;
+          }
+          row.copy = newCopy;
+        }
+        if (edits[key].usernote !== undefined) row._userNote = edits[key].usernote || '';
+      }
+      row._approved = approved[key] || null;
+      row._flagDismissed = dismissedFlags[key] || false;
+      if (sec.rows[ri]._noteActioned) row._noteActioned = true;
+      if (sec.rows[ri]._rowMoved) row._rowMoved = true;
+      if (sec.rows[ri]._originalIndex !== undefined) row._originalIndex = sec.rows[ri]._originalIndex;
+      return row;
+    });
+    return s;
+  });
+
+  // Increment version
+  saveVersion++;
+  const vStr = String(saveVersion).padStart(2, '0');
+  const reviewer = document.getElementById('reviewer-name')?.value.trim() || '';
+  const filename = `COPY_REVIEW_CMO_SURVEY_v${vStr}${reviewer ? '_' + reviewer.replace(/\s+/g, '_') : ''}.html`;
+
+  const html = document.documentElement.outerHTML;
+  const approvedSnapshot = JSON.stringify(approved);
+  const dismissedSnapshot = JSON.stringify(dismissedFlags);
+  const auditSnapshot = JSON.stringify(auditLog);
+  const reviewerSnapshot = JSON.stringify(reviewer);
+  const versionSnapshot = String(saveVersion);
+  const sectionsSnippet = `const SECTIONS = ${JSON.stringify(snapshot, null, 2)};`;
+  const approvedSnippet = `const _savedApproved = ${approvedSnapshot};`;
+  const dismissedSnippet = `const _savedDismissed = ${dismissedSnapshot};`;
+  const auditSnippet = `const _savedAuditLog = ${auditSnapshot};`;
+  const reviewerSnippet = `const _savedReviewer = ${reviewerSnapshot};`;
+  const versionSnippet = `const _savedVersion = ${versionSnapshot};`;
+
+  let patched = html
+    .replace(/const SECTIONS = \[[\s\S]*?\];/, sectionsSnippet)
+    .replace(/\/\/ ── RENDER ─/,
+      `${approvedSnippet}\n${dismissedSnippet}\n${auditSnippet}\n${reviewerSnippet}\n${versionSnippet}\nObject.assign(approved, _savedApproved);\nObject.assign(dismissedFlags, _savedDismissed);\nif(typeof _savedVersion!=='undefined') saveVersion=_savedVersion;\nloadAuditState(_savedAuditLog, _savedReviewer);\n// ── RENDER ─`);
+
+  const blob = new Blob([patched], { type: 'text/html' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  const editMsg = editCount > 0 ? ` · ${editCount} copy edit${editCount > 1 ? 's' : ''} flagged for design` : '';
+  showToast(`✓ Saved as ${filename}${editMsg}`);
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ── DEV COLUMNS TOGGLE ────────────────────────────────────────────────────────
+let devColsVisible = false;
+function toggleDevCols() {
+  devColsVisible = !devColsVisible;
+  document.getElementById('sections-container').classList.toggle('show-dev', devColsVisible);
+  document.getElementById('dev-toggle-track').classList.toggle('on', devColsVisible);
+}
+
+// ── LIGHTBOX ──────────────────────────────────────────────────────────────────
+function openLightbox(src, label) {
+  const lb = document.getElementById('lightbox');
+  document.getElementById('lightbox-img').src = src;
+  document.getElementById('lightbox-label').textContent = label;
+  lb.classList.add('open');
+  document.addEventListener('keydown', onLightboxKey);
+}
+
+function closeLightbox(e) {
+  // Close only if clicking backdrop (not the image itself)
+  if (e && e.target.classList.contains('lightbox-img')) return;
+  document.getElementById('lightbox').classList.remove('open');
+  document.removeEventListener('keydown', onLightboxKey);
+}
+
+function onLightboxKey(e) {
+  if (e.key === 'Escape') closeLightbox();
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+render(SECTIONS);
+initReviewerInput();
+
+</script>
+
+
+</body></html>
